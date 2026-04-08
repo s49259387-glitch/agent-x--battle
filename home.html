@@ -3,89 +3,52 @@
 <head>
 <title>Agent X Battle</title>
 
+<!-- ✅ MOBILE FIX -->
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
 
 <style>
 body{
  margin:0;
  font-family:sans-serif;
- background:#0f172a;
+ background:linear-gradient(180deg,#0f0c29,#302b63,#24243e);
  color:white;
+
+ /* ✅ CENTER + MOBILE FIX */
+ max-width:500px;
+ margin:auto;
 }
 
 .header{
  display:flex;
  justify-content:space-between;
  padding:15px;
- background:#111;
 }
 
-.balance{
- background:#00ffcc;
- color:black;
- padding:5px 15px;
- border-radius:15px;
-}
-
-.card{
- background:#1e293b;
+.wallet{
+ background:#1e1e2f;
+ padding:15px;
  margin:10px;
- padding:10px;
- border-radius:15px;
- box-shadow:0 0 10px cyan;
+ border-radius:12px;
 }
 
-.card img{
- width:100%;
- border-radius:10px;
+.match{
+ background:#1e1e2f;
+ padding:15px;
+ margin:10px;
+ border-radius:12px;
 }
 
 button{
- padding:10px;
- margin:5px;
+ padding:10px 15px;
  border:none;
- border-radius:10px;
- background:linear-gradient(45deg,#ff416c,#ff4b2b);
+ border-radius:8px;
+ background:#ff416c;
  color:white;
-}
-
-/* 🔥 POPUP */
-.popup{
- position:fixed;
- top:0;
- left:0;
- width:100%;
- height:100%;
- background:rgba(0,0,0,0.8);
- display:none;
- justify-content:center;
- align-items:center;
-}
-
-.popup-box{
- background:#1e293b;
- padding:20px;
- border-radius:15px;
- text-align:center;
-}
-
-.popup img{
- width:200px;
- margin:10px;
- border-radius:10px;
-}
-
-/* NAV */
-.nav{
- position:fixed;
- bottom:0;
- width:100%;
- background:#111;
- display:flex;
- justify-content:space-around;
- padding:10px;
+ margin-top:10px;
 }
 </style>
 </head>
@@ -93,190 +56,22 @@ button{
 <body>
 
 <div class="header">
- <h2>🏆 Agent X Battle</h2>
- <div id="bal" class="balance">₹0</div>
+  <h3>🏆 Agent X Battle</h3>
+  <div>₹100</div>
 </div>
 
-<!-- WALLET -->
-<div class="card">
-<h3>💰 Wallet</h3>
-<button onclick="openQR()">➕ Add Money</button>
-<button onclick="withdraw()">💸 Withdraw</button>
+<div class="wallet">
+  <h4>💰 Wallet</h4>
+  <button>Add Money</button>
+  <button>Withdraw</button>
 </div>
 
-<div id="tournaments"></div>
-
-<!-- 🔥 QR POPUP -->
-<div id="qrPopup" class="popup">
- <div class="popup-box">
-  <h3>Scan & Pay</h3>
-  <img id="qrImg" src="">
-  <p id="upiText"></p>
-
-  <input id="amount" placeholder="Enter Amount">
-  <br>
-  <button onclick="confirmPayment()">Paid</button>
-  <button onclick="closeQR()">Close</button>
- </div>
+<div class="match">
+  <h4>Free Fire Lone Wolf 1v1</h4>
+  <p>₹10 | Win ₹20</p>
+  <button>Join</button>
+  <button>Room</button>
 </div>
-
-<!-- NAV -->
-<div class="nav">
- <div onclick="location.reload()">🏠</div>
- <div onclick="openQR()">💰</div>
- <div onclick="alert('Matches Soon 🎮')">🎮</div>
- <div onclick="alert('Profile Soon 👤')">👤</div>
-</div>
-
-<script>
-const firebaseConfig={
- apiKey:"AIzaSyBWJuXY8A2jKKBrW4CnLdfU3Spx2U4GUU0",
- databaseURL:"https://battle-x-agent-default-rtdb.firebaseio.com",
-};
-
-firebase.initializeApp(firebaseConfig);
-const db=firebase.database();
-
-// USER
-firebase.auth().onAuthStateChanged(user=>{
- if(!user){
-  location="login.html";
- } else {
-  let uid=user.uid;
-
-  db.ref("users/"+uid).on("value",snap=>{
-   let u=snap.val();
-   document.getElementById("bal").innerText="₹"+(u.wallet||0);
-
-   if(u.banned){
-    alert("🚫 Banned");
-    firebase.auth().signOut();
-   }
-  });
- }
-});
-
-// 🔥 LOAD PAYMENT DETAILS
-let paymentData={};
-
-db.ref("payment").on("value",snap=>{
- paymentData = snap.val() || {};
-});
-
-// 🔥 OPEN QR
-function openQR(){
- if(!paymentData.qr){
-  alert("QR not set ❌");
-  return;
- }
-
- document.getElementById("qrImg").src = paymentData.qr;
- document.getElementById("upiText").innerText = "UPI: " + paymentData.upi;
-
- document.getElementById("qrPopup").style.display="flex";
-}
-
-// CLOSE
-function closeQR(){
- document.getElementById("qrPopup").style.display="none";
-}
-
-// CONFIRM PAYMENT
-function confirmPayment(){
- let amt = Number(document.getElementById("amount").value);
- let uid = firebase.auth().currentUser.uid;
-
- if(!amt){
-  alert("Enter amount ❌");
-  return;
- }
-
- db.ref("requests/add").push({
-  uid:uid,
-  amount:amt,
-  status:"Pending"
- });
-
- alert("Request Sent ✅");
- closeQR();
-}
-
-// WITHDRAW
-function withdraw(){
- let amt=prompt("Withdraw Amount:");
- if(!amt) return;
-
- let uid=firebase.auth().currentUser.uid;
-
- db.ref("requests/withdraw").push({
-  uid:uid,
-  amount:Number(amt),
-  status:"Pending"
- });
-
- alert("Withdraw Request Sent ✅");
-}
-
-// MATCHES
-db.ref("tournaments").on("value",snap=>{
- let data=snap.val();
- let html="";
-
- for(let id in data){
-  let m=data[id];
-
-  html+=`
-  <div class="card">
-   <img src="${m.image}">
-   <h3>${m.title}</h3>
-   <p>₹${m.fee} | ${m.status}</p>
-
-   <button onclick="joinMatch('${id}',${m.fee})">Join</button>
-   <button onclick="viewRoom('${id}')">Room</button>
-  </div>`;
- }
-
- document.getElementById("tournaments").innerHTML=html;
-});
-
-// JOIN
-function joinMatch(id,fee){
- let uid=firebase.auth().currentUser.uid;
-
- db.ref("users/"+uid).once("value").then(snap=>{
-  let w=snap.val().wallet||0;
-
-  if(w<fee){
-   alert("Low Balance ❌");
-   return;
-  }
-
-  db.ref("users/"+uid).update({wallet:w-fee});
-  db.ref("joins/"+id+"/"+uid).set(true);
-
-  db.ref("history/"+uid).push({
-   match:id,
-   amount:-fee
-  });
-
-  alert("Joined ✅");
- });
-}
-
-// ROOM
-function viewRoom(id){
- db.ref("tournaments/"+id).once("value").then(snap=>{
-  let m=snap.val();
-
-  if(m.status!=="Live"){
-   alert("Not Live ❌");
-   return;
-  }
-
-  alert("Room ID: "+m.roomId+"\nPass: "+m.roomPass);
- });
-}
-</script>
 
 </body>
 </html>
