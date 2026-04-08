@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Wallet</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #050816;
+  color: white;
+}
+
+/* Top Bar */
+.top {
+  display: flex;
+  justify-content: space-between;
+  padding: 15px;
+  background: #0d132b;
+  border-bottom: 1px solid #00f2ff;
+}
+
+.balance {
+  padding: 6px 15px;
+  border-radius: 20px;
+  border: 1px solid #00f2ff;
+  box-shadow: 0 0 10px #00f2ff;
+}
+
+/* Container */
+.container {
+  padding: 20px;
+  text-align: center;
+}
+
+/* Input */
+input {
+  width: 80%;
+  padding: 12px;
+  border-radius: 10px;
+  border: none;
+  margin: 15px 0;
+  background: #1e293b;
+  color: white;
+}
+
+/* Buttons */
+.btn {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 10px;
+  margin: 8px;
+  background: linear-gradient(45deg,#ff512f,#dd2476);
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 0 10px #ff512f;
+}
+
+/* History */
+.history {
+  margin-top: 20px;
+  text-align: left;
+}
+
+.history h3 {
+  text-align: center;
+}
+
+.item {
+  background: #1e293b;
+  margin: 8px;
+  padding: 10px;
+  border-radius: 10px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.add {
+  color: #00ffcc;
+}
+
+.withdraw {
+  color: #ff4d4d;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <div onclick="goBack()">⬅ Back</div>
+  <div class="balance">₹ <span id="balance">0</span></div>
+</div>
+
+<div class="container">
+
+  <h2>💰 Wallet</h2>
+
+  <input type="number" id="amount" placeholder="Enter amount">
+
+  <br>
+
+  <button class="btn" onclick="addMoney()">Add Money</button>
+  <button class="btn" onclick="withdrawMoney()">Withdraw</button>
+
+  <!-- Music -->
+  <br>
+  <button class="btn" onclick="toggleMusic()">🎵 Music</button>
+
+  <!-- History -->
+  <div class="history">
+    <h3>Transactions</h3>
+    <div id="history"></div>
+  </div>
+
+</div>
+
+<!-- Audio -->
+<audio id="bgMusic" loop>
+  <source src="music/bg.mp3" type="audio/mp3">
+</audio>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBWJuXY8A2jKKBrW4CnLdfU3Spx2U4GUU0",
+  authDomain: "battle-x-agent.firebaseapp.com",
+  projectId: "battle-x-agent"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const auth = firebase.auth();
+const db = firebase.firestore();
+
+let user;
+
+// Auth
+auth.onAuthStateChanged(u => {
+  if(u){
+    user = u;
+    loadBalance();
+    loadHistory();
+  } else {
+    window.location.href="login.html";
+  }
+});
+
+// Load Balance
+function loadBalance(){
+  db.collection("users").doc(user.uid).get().then(doc=>{
+    document.getElementById("balance").innerText = doc.data().balance || 0;
+  });
+}
+
+// Add Money
+function addMoney(){
+  let amt = parseInt(document.getElementById("amount").value);
+
+  if(!amt || amt <= 0) return alert("Enter valid amount");
+
+  db.collection("users").doc(user.uid).update({
+    balance: firebase.firestore.FieldValue.increment(amt)
+  });
+
+  db.collection("transactions").add({
+    uid: user.uid,
+    type: "ADD",
+    amount: amt,
+    time: new Date()
+  });
+
+  alert("Added");
+  location.reload();
+}
+
+// Withdraw
+function withdrawMoney(){
+  let amt = parseInt(document.getElementById("amount").value);
+
+  db.collection("users").doc(user.uid).get().then(doc=>{
+    let bal = doc.data().balance;
+
+    if(bal >= amt){
+
+      db.collection("users").doc(user.uid).update({
+        balance: firebase.firestore.FieldValue.increment(-amt)
+      });
+
+      db.collection("transactions").add({
+        uid: user.uid,
+        type: "WITHDRAW",
+        amount: amt,
+        time: new Date()
+      });
+
+      alert("Withdraw Done");
+      location.reload();
+
+    } else {
+      alert("Not enough balance");
+    }
+  });
+}
+
+// Load History
+function loadHistory(){
+  db.collection("transactions")
+  .where("uid","==",user.uid)
+  .get()
+  .then(snap=>{
+    let html = "";
+    snap.forEach(doc=>{
+      let d = doc.data();
+
+      html += `
+      <div class="item">
+        <span>${d.type}</span>
+        <span class="${d.type=='ADD'?'add':'withdraw'}">₹${d.amount}</span>
+      </div>`;
+    });
+    document.getElementById("history").innerHTML = html;
+  });
+}
+
+// Music
+let music = document.getElementById("bgMusic");
+
+function toggleMusic(){
+  if(music.paused){
+    music.play();
+  } else {
+    music.pause();
+  }
+}
+
+// Back
+function goBack(){
+  window.location.href="profile.html";
+}
+</script>
+
+</body>
+</html>

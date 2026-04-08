@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>My Matches</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial;
+  background: #050816;
+  color: white;
+}
+
+/* Top */
+.top {
+  text-align: center;
+  padding: 15px;
+  background: #0d132b;
+  border-bottom: 1px solid #00f2ff;
+}
+
+/* Match Card */
+.match {
+  background: #1e293b;
+  margin: 15px;
+  padding: 15px;
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(0,255,255,0.3);
+}
+
+/* Bottom Nav */
+.nav {
+  position: fixed;
+  bottom: 0;
+  width: 100%;
+  background: #0d132b;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+}
+
+.nav div {
+  text-align: center;
+  font-size: 12px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="top">
+  <h2>🎮 My Matches</h2>
+</div>
+
+<div id="matchList"></div>
+
+<!-- NAV -->
+<div class="nav">
+  <div onclick="goHome()">🏠<br>Home</div>
+  <div onclick="goWallet()">💰<br>Wallet</div>
+  <div onclick="goProfile()">👤<br>Profile</div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-firestore.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBWJuXY8A2jKKBrW4CnLdfU3Spx2U4GUU0",
+  authDomain: "battle-x-agent.firebaseapp.com",
+  projectId: "battle-x-agent"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+const db = firebase.firestore();
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(user => {
+  if(user){
+    loadMatches(user.uid);
+  } else {
+    window.location.href="login.html";
+  }
+});
+
+// LOAD JOINED MATCHES
+function loadMatches(uid){
+  db.collection("joinedMatches")
+  .where("uid","==",uid)
+  .get()
+  .then(snap=>{
+    let html = "";
+
+    if(snap.empty){
+      html = "<p style='text-align:center;'>No matches joined 😢</p>";
+    }
+
+    snap.forEach(doc=>{
+      let d = doc.data();
+
+      html += `
+      <div class="match">
+        <h3>${d.name}</h3>
+        <p>Entry: ₹${d.entry}</p>
+        <p>Prize: ₹${d.prize}</p>
+        <p>Status: Joined ✅</p>
+      </div>`;
+    });
+
+    document.getElementById("matchList").innerHTML = html;
+  });
+}
+
+// Navigation
+function goHome(){
+  window.location.href="home.html";
+}
+
+function goWallet(){
+  window.location.href="wallet.html";
+}
+
+function goProfile(){
+  window.location.href="profile.html";
+}
+</script>
+
+</body>
+</html>

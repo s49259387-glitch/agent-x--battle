@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Loading...</title>
+
+  <style>
+    body {
+      margin: 0;
+      background: #0f2027;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: white;
+      font-family: Arial;
+      flex-direction: column;
+    }
+
+    .logo {
+      font-size: 30px;
+      font-weight: bold;
+      color: #00ffcc;
+      animation: glow 1s infinite alternate;
+    }
+
+    @keyframes glow {
+      from { text-shadow: 0 0 10px #00ffcc; }
+      to { text-shadow: 0 0 20px #00ffcc; }
+    }
+
+    .loader {
+      margin-top: 20px;
+      border: 5px solid #333;
+      border-top: 5px solid #00ffcc;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+  </style>
+
+</head>
+
+<body>
+
+<div class="logo">Battle X Agent ⚡</div>
+<div class="loader"></div>
+
+<script>
+  setTimeout(() => {
+    window.location.href = "login.html";
+  }, 2500); // 2.5 sec baad redirect
+</script>
+
+</body>
+</html>

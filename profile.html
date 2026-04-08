@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Profile</title>
+
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial;
+      background: #020617;
+      overflow: hidden;
+      color: white;
+    }
+
+    /* 💨⚡ EFFECTS */
+    .effects {
+      position: fixed;
+      width: 100%;
+      height: 100%;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    .smoke {
+      position: absolute;
+      bottom: -100px;
+      width: 120px;
+      height: 120px;
+      background: rgba(255,255,255,0.05);
+      border-radius: 50%;
+      filter: blur(25px);
+      animation: smokeMove 12s infinite;
+    }
+
+    .smoke:nth-child(1){ left:20%; }
+    .smoke:nth-child(2){ left:50%; animation-delay:4s; }
+    .smoke:nth-child(3){ left:80%; animation-delay:8s; }
+
+    @keyframes smokeMove {
+      0% { transform: translateY(0); opacity:0.2; }
+      100% { transform: translateY(-900px); opacity:0; }
+    }
+
+    .lightning {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      background: white;
+      opacity: 0;
+      animation: flash 8s infinite;
+    }
+
+    @keyframes flash {
+      0%,94%,100% { opacity:0; }
+      95% { opacity:0.3; }
+      96% { opacity:0.7; }
+      97% { opacity:0.1; }
+    }
+
+    /* 🔝 TOP BALANCE */
+    .top-bar {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      justify-content: flex-end;
+      padding: 10px;
+    }
+
+    .balance-box {
+      background: #111827;
+      padding: 8px 15px;
+      border-radius: 20px;
+      border: 1px solid #00f2ff;
+      box-shadow: 0 0 10px #00f2ff;
+    }
+
+    /* CENTER */
+    .center {
+      position: relative;
+      z-index: 2;
+      text-align: center;
+      margin-top: 80px;
+    }
+
+    .card {
+      background: #1e293b;
+      margin: 15px auto;
+      padding: 15px;
+      width: 80%;
+      border-radius: 12px;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 10px;
+      background: #ff5f00;
+      color: white;
+      margin-top: 15px;
+    }
+
+    /* 🔻 BOTTOM NAV */
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background: #020617;
+      display: flex;
+      justify-content: space-around;
+      padding: 10px;
+      border-top: 1px solid #00f2ff;
+      z-index: 2;
+    }
+
+    .nav-btn {
+      text-align: center;
+      font-size: 12px;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<!-- 💨⚡ EFFECTS -->
+<div class="effects">
+  <div class="smoke"></div>
+  <div class="smoke"></div>
+  <div class="smoke"></div>
+  <div class="lightning"></div>
+</div>
+
+<!-- 🔝 BALANCE -->
+<div class="top-bar">
+  <div class="balance-box">
+    ₹ <span id="balance">0</span>
+  </div>
+</div>
+
+<!-- 👤 CONTENT -->
+<div class="center">
+  <h2>👤 Profile</h2>
+
+  <div class="card">🔥 My Matches</div>
+  <div class="card">🏆 Tournaments</div>
+
+  <button class="btn" onclick="logout()">Logout</button>
+</div>
+
+<!-- 🔻 NAV -->
+<div class="bottom-nav">
+  <div class="nav-btn" onclick="goHome()">🏠<br>Home</div>
+  <div class="nav-btn" onclick="goWallet()">💰<br>Wallet</div>
+  <div class="nav-btn">👤<br>Profile</div>
+  <div class="nav-btn" onclick="goMatches()">🎮<br>Matches</div>
+</div>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyBWJuXY8A2jKKBrW4CnLdfU3Spx2U4GUU0",
+  authDomain: "battle-x-agent.firebaseapp.com",
+  databaseURL: "https://battle-x-agent-default-rtdb.firebaseio.com",
+  projectId: "battle-x-agent",
+  storageBucket: "battle-x-agent.firebasestorage.app",
+  messagingSenderId: "573904819586",
+  appId: "1:573904819586:web:f9ef45016e9dd9927eeb9b"
+};
+
+firebase.initializeApp(firebaseConfig);
+
+// AUTH + BALANCE
+firebase.auth().onAuthStateChanged(function(user) {
+  if(user){
+    firebase.database().ref("users/" + user.uid + "/balance")
+    .on("value", (snap)=>{
+      document.getElementById("balance").innerText = snap.val() || 0;
+    });
+  } else {
+    window.location.href="login.html";
+  }
+});
+
+// NAV
+function goHome(){
+  window.location.href="home.html";
+}
+
+function goWallet(){
+  window.location.href="wallet.html";
+}
+
+function goMatches(){
+  window.location.href="mymatch.html";
+}
+
+// LOGOUT
+function logout(){
+  firebase.auth().signOut().then(()=>{
+    window.location.href="login.html";
+  });
+}
+</script>
+
+</body>
+</html>

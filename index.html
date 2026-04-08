@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Battle X Agent</title>
+
+  <!-- Google Font -->
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Orbitron', sans-serif;
+      background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+      color: white;
+      text-align: center;
+    }
+
+    .container {
+      margin-top: 80px;
+    }
+
+    /* 🔥 Logo Style */
+    .logo-box {
+      border: 3px solid #ff4d4d;
+      display: inline-block;
+      padding: 20px 40px;
+      border-radius: 15px;
+      box-shadow: 0 0 20px rgba(255,0,0,0.5);
+      margin-bottom: 30px;
+    }
+
+    .agent {
+      font-size: 32px;
+      color: white;
+      text-shadow: 0 0 10px #00ffc3;
+    }
+
+    .battle {
+      font-size: 40px;
+      color: #ff4d4d;
+      text-shadow: 0 0 15px #ff0000;
+    }
+
+    /* Buttons */
+    .btn {
+      display: block;
+      width: 80%;
+      margin: 20px auto;
+      padding: 15px;
+      border-radius: 30px;
+      border: none;
+      font-size: 18px;
+      font-weight: bold;
+      color: white;
+      background: linear-gradient(45deg, #ff4d4d, #ff9900);
+      box-shadow: 0 0 15px rgba(255,100,0,0.5);
+      transition: 0.3s;
+    }
+
+    .btn:hover {
+      transform: scale(1.05);
+      box-shadow: 0 0 25px rgba(255,100,0,0.8);
+    }
+
+    .footer {
+      position: fixed;
+      bottom: 10px;
+      width: 100%;
+      font-size: 14px;
+      opacity: 0.7;
+    }
+
+  </style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <!-- 🔥 Gaming Logo -->
+  <div class="logo-box">
+    <div class="agent">⚡ AGENT 👑</div>
+    <div class="battle">BATTLE 🎮</div>
+  </div>
+
+  <!-- Buttons -->
+  <button class="btn" onclick="location.href='login.html'">
+    🔐 Login
+  </button>
+
+  <button class="btn" onclick="location.href='register.html'">
+    📝 Register
+  </button>
+
+</div>
+
+<div class="footer">
+  Made with ❤️ by Battle X Agent
+</div>
+
+</body>
+</html>

@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Admin Panel</title>
+
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
+<style>
+body{background:#0f172a;color:white;font-family:sans-serif;}
+h1{text-align:center;}
+.box{background:#1e293b;margin:15px;padding:15px;border-radius:15px;box-shadow:0 0 10px cyan;}
+input{width:90%;padding:10px;margin:5px;border:none;border-radius:10px;}
+button{padding:10px;margin:5px;border:none;border-radius:10px;background:#00ffcc;}
+</style>
+</head>
+
+<body>
+
+<h1>👑 ADMIN PANEL</h1>
+
+<!-- 💰 PAYMENT SETTINGS -->
+<div class="box">
+<h3>💰 Payment Settings</h3>
+<input id="upi" placeholder="Enter UPI ID">
+<input id="qr" placeholder="Enter QR Image URL">
+<button onclick="savePayment()">Save</button>
+</div>
+
+<!-- CREATE MATCH -->
+<div class="box">
+<h3>🎮 Create Match</h3>
+<input id="title" placeholder="Match Name">
+<input id="img" placeholder="Image URL">
+<input id="fee" placeholder="Entry Fee">
+<button onclick="createMatch()">Create</button>
+</div>
+
+<!-- UPDATE MATCH -->
+<div class="box">
+<h3>⚙ Update Match</h3>
+<input id="matchId" placeholder="Match ID">
+<input id="roomId" placeholder="Room ID">
+<input id="roomPass" placeholder="Room Password">
+<input id="status" placeholder="Upcoming / Live / Ended">
+<button onclick="updateMatch()">Update</button>
+</div>
+
+<!-- 🏆 WINNER -->
+<div class="box">
+<h3>🏆 Declare Winner</h3>
+<input id="winMatch" placeholder="Match ID">
+<input id="winUser" placeholder="Winner UID">
+<input id="prize" placeholder="Prize Amount">
+<button onclick="setWinner()">Declare</button>
+</div>
+
+<!-- USERS -->
+<div class="box">
+<h3>👤 Users</h3>
+<div id="users"></div>
+</div>
+
+<!-- REQUESTS -->
+<div class="box">
+<h3>💰 Add Requests</h3>
+<div id="addReq"></div>
+</div>
+
+<div class="box">
+<h3>💸 Withdraw Requests</h3>
+<div id="withReq"></div>
+</div>
+
+<script>
+
+const firebaseConfig={
+ apiKey:"AIzaSyBWJuXY8A2jKKBrW4CnLdfU3Spx2U4GUU0",
+ databaseURL:"https://battle-x-agent-default-rtdb.firebaseio.com",
+};
+
+firebase.initializeApp(firebaseConfig);
+const db=firebase.database();
+
+// 💰 SAVE PAYMENT
+function savePayment(){
+ let upi=document.getElementById("upi").value;
+ let qr=document.getElementById("qr").value;
+
+ db.ref("payment").set({
+  upi:upi,
+  qr:qr
+ });
+
+ alert("Payment Updated ✅");
+}
+
+// CREATE MATCH
+function createMatch(){
+ let id=Date.now();
+
+ db.ref("tournaments/"+id).set({
+  title:title.value,
+  image:img.value,
+  fee:Number(fee.value),
+  status:"Upcoming"
+ });
+
+ alert("Match Created");
+}
+
+// UPDATE MATCH
+function updateMatch(){
+ db.ref("tournaments/"+matchId.value).update({
+  roomId:roomId.value,
+  roomPass:roomPass.value,
+  status:status.value
+ });
+
+ alert("Updated");
+}
+
+// WINNER
+function setWinner(){
+ let m=winMatch.value;
+ let u=winUser.value;
+ let p=Number(prize.value);
+
+ db.ref("users/"+u+"/wallet").once("value").then(snap=>{
+  let w=snap.val()||0;
+
+  db.ref("users/"+u).update({wallet:w+p});
+
+  db.ref("history/"+u).push({
+   match:m,
+   amount:p
+  });
+
+  db.ref("results/"+m).set({
+   winner:u,
+   prize:p
+  });
+
+  alert("Winner Done 🏆");
+ });
+}
+
+// USERS
+db.ref("users").on("value",snap=>{
+ let d=snap.val(),h="";
+ for(let id in d){
+  let u=d[id];
+  h+=`<div class="box">
+   <p>${u.email}</p>
+   <p>₹${u.wallet||0}</p>
+   <button onclick="add('${id}')">+₹</button>
+   <button onclick="ban('${id}')">Ban</button>
+  </div>`;
+ }
+ users.innerHTML=h;
+});
+
+function add(id){
+ let a=prompt("Amount");
+ db.ref("users/"+id+"/wallet").once("value").then(s=>{
+  db.ref("users/"+id).update({wallet:(s.val()||0)+Number(a)});
+ });
+}
+
+function ban(id){
+ db.ref("users/"+id).update({banned:true});
+}
+
+// REQUESTS
+db.ref("requests").on("value",snap=>{
+ let d=snap.val(),a="",w="";
+ for(let t in d){
+  for(let id in d[t]){
+   let r=d[t][id];
+   let b=`<div class="box">
+    <p>${r.uid}</p>
+    <p>₹${r.amount}</p>
+    <button onclick="ap('${t}','${id}','${r.uid}',${r.amount})">OK</button>
+    <button onclick="rej('${t}','${id}')">X</button>
+   </div>`;
+   if(t=="add") a+=b; else w+=b;
+  }
+ }
+ addReq.innerHTML=a;
+ withReq.innerHTML=w;
+});
+
+function ap(t,id,u,amt){
+ db.ref("users/"+u+"/wallet").once("value").then(s=>{
+  let w=s.val()||0;
+  if(t=="add") w+=amt; else w-=amt;
+  db.ref("users/"+u).update({wallet:w});
+  db.ref("requests/"+t+"/"+id).remove();
+ });
+}
+
+function rej(t,id){
+ db.ref("requests/"+t+"/"+id).remove();
+}
+
+</script>
+
+</body>
+</html>
